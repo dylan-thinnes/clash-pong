@@ -46,6 +46,6 @@ topEntity = withEnableGen board
 
         st = regEn initState frameEnd $ (updateState <$> params <*> inputs <*> st)
 
-        rgb = bitCoerce <$> (draw <$> params <*> st <*> xy)
+        rgb = draw <$> params <*> st <*> xy
           where
             xy = fromMaybe (0, 0) <$> (liftA2 (,) <$> vgaX <*> vgaY)

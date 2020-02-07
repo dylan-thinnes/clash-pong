@@ -12,6 +12,8 @@ module Pong.Game
     , ScreenHeight
 
     , between
+
+    , module Pong.Game
     ) where
 
 import Prelude
@@ -63,7 +65,18 @@ data InputState = MkInputState
 double :: (Num a) => a -> a
 double x = x + x
 
+reflect' :: (Num a, Ord a, Num a', Ord a') => (a, a') -> State (a, a') Bool
+reflect' (p, n) = do
+    over <- gets $ dir . (p -) . fst
+    if over > 0 then do
+        modify $ \(x, dx) -> (x + dir (double over), negate dx)
+        return True
+      else return False
+  where
+    dir = if n > 0 then id else negate
+
 reflect :: (Num a, Num a', Ord a, Ord a') => Lens' s a -> Lens' s a' -> (a, a') -> State s Bool
+-- reflect x x' (p, n) = zoom
 reflect x x' (p, n) = do
     x0 <- use x
     let over = dir $ p - x0
