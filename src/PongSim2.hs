@@ -87,24 +87,20 @@ main = do
     hSetBuffering stdout NoBuffering
 
     arr <- newArray @IOUArray ((0, 0, 0), (639, 479, 2)) 0
-    ray <- newIORef (0, 0)
 
     let writeBuf x y (r, g, b) = do
-            writeIORef ray (x, y)
             writeArray arr (x, y, 0) r
             writeArray arr (x, y, 1) g
             writeArray arr (x, y, 2) b
 
-    keyStateRef <- newIORef (const False)
+    keys <- newIORef (False, False)
 
     forkIO $ do
         ref <- newIORef (WaitSync False, WaitSync False, TimeSpec 0 0)
         cnt <- newIORef (0 :: Int)
-        simulateIO2 topEntity' $ \vgaOut@(vgaHSync, vgaVSync, (vgaR, vgaG, vgaB)) -> do
-            keyState <- readIORef keyStateRef
+        simulateIO topEntity' $ \vgaOut@(vgaHSync, vgaVSync, (vgaR, vgaG, vgaB)) -> do
             let sw = repeat low
-                up = keyState ScancodeUp
-                dn = keyState ScancodeDown
+            (up, dn) <- readIORef keys
 
             s <- readIORef ref
             s' <- execStateT (vgaSink vga640x480at60 writeBuf vgaOut) s
@@ -113,8 +109,9 @@ main = do
             return (sw, toActive up, toActive dn)
 
     withMainWindow "VGA" 2 () $ \events keyState () -> do
-        writeIORef keyStateRef keyState
-        return $ Just (rasterizeRay ray $ rasterizeBuffer (SNat @640) (SNat @480) arr, ())
+        let [up, dn] = fmap (keyState $) [ScancodeUp, ScancodeDown]
+        up `seq` dn `seq` writeIORef keys (up, dn)
+        return $ Just (rasterizeBuffer (SNat @640) (SNat @480) arr, ())
   where
     topEntity' i =
         let VGAOut{ vgaSync = VGASync{..}, ..} = topEntity clockGen resetGen sw up dn
