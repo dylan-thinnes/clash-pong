@@ -5,7 +5,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 import Pong
-import SimIO
+import RetroClash.Sim.IO
+
 import RetroClash.Utils
 import RetroClash.VGA
 import Control.Monad.State
@@ -20,6 +21,9 @@ import Clash.Prelude hiding (lift)
 import Data.Word
 import Debug.Trace
 import System.IO
+import SDL hiding (get)
+
+import System.Clock
 
 vgaRetrace :: VGATiming visible -> (Int, Bit)
 vgaRetrace VGATiming{..} = (snatToNum pulseWidth + snatToNum postWidth, toActiveDyn polarity True)
@@ -35,26 +39,33 @@ vgaSink
     => VGATimings ps w h
     -> (Int -> Int -> (r, g, b) -> m ())
     -> (Bit, Bit, (r, g, b))
-    -> StateT (SinkState, SinkState) m ()
+    -> StateT (SinkState, SinkState, TimeSpec) m ()
 vgaSink VGATimings{..} paint (hsync0, vsync0, color) = do
     (x, endLine) <- zoom _1 $ direction w horizRetrace hsync
-    (y, endFrame) <- if not endLine then return (Nothing, False) else zoom _2 $ direction h vertRetrace vsync
-    -- s <- get
-    -- traceShow s $ return ()
-    when endLine $ lift $ putStrLn "endLine"
-    when endFrame $ lift $ putStrLn "endFrame"
-    for_ (liftA2 (,) x y) $ \(x, y) -> lift $ do
-        print (x, y)
-        paint x y color
+    (y, endFrame) <- zoom _2 $ (if endLine then id else undo) $ direction h vertRetrace vsync
+    when (endLine && endFrame) $ zoom _3 $ do
+        t <- lift $ getTime Monotonic
+        t0 <- get
+        put t
+        lift $ print $ millisec t - millisec t0
+    for_ (liftA2 (,) x y) $ \(x, y) -> lift $ paint x y color
   where
     (horizRetrace, hsyncTarget) = vgaRetrace vgaHorizTiming
     (vertRetrace, vsyncTarget) = vgaRetrace vgaVertTiming
+
+    millisec (TimeSpec sec nsec) = sec * 1_000 + nsec `div` 1_000_000
 
     vsync = vsync0 == vsyncTarget
     hsync = hsync0 == hsyncTarget
 
     w = fromIntegral (maxBound :: Index w)
     h = fromIntegral (maxBound :: Index h)
+
+    undo act = do
+        s <- get
+        x <- act
+        put s
+        return x
 
     -- direction :: (KnownNat vis, Monad m) => Int -> Bool -> StateT (SinkState vis) m (Maybe (Index vis), Bool)
     direction vis retrace sync = do
@@ -76,43 +87,34 @@ main = do
     hSetBuffering stdout NoBuffering
 
     arr <- newArray @IOUArray ((0, 0, 0), (639, 479, 2)) 0
+    ray <- newIORef (0, 0)
 
     let writeBuf x y (r, g, b) = do
-            traceShow (x, y) $ return ()
+            writeIORef ray (x, y)
             writeArray arr (x, y, 0) r
             writeArray arr (x, y, 1) g
             writeArray arr (x, y, 2) b
 
-    vga <- newEmptyMVar
+    keyStateRef <- newIORef (const False)
 
-    -- forkIO $ do
-    --     flip evalStateT (WaitSync False, WaitSync False) $ forever $ do
-    --         vgaOut <- lift $ takeMVar vga
-    --         vgaSink vga640x480at60 writeBuf vgaOut
-
-    do
-        ref <- newIORef (WaitSync False, WaitSync False)
+    forkIO $ do
+        ref <- newIORef (WaitSync False, WaitSync False, TimeSpec 0 0)
         cnt <- newIORef (0 :: Int)
-        simulateIO topEntity' $ \vgaOut@(vgaHSync, vgaVSync, (vgaR, vgaG, vgaB)) -> do
+        simulateIO2 topEntity' $ \vgaOut@(vgaHSync, vgaVSync, (vgaR, vgaG, vgaB)) -> do
+            keyState <- readIORef keyStateRef
             let sw = repeat low
-                up = False
-                dn = False
-
-            i <- readIORef cnt
-            print i
-            writeIORef cnt $! i + 1
+                up = keyState ScancodeUp
+                dn = keyState ScancodeDown
 
             s <- readIORef ref
             s' <- execStateT (vgaSink vga640x480at60 writeBuf vgaOut) s
             writeIORef ref s'
 
-            -- putMVar vga vgaOut
             return (sw, toActive up, toActive dn)
 
-    return ()
-
-    -- withMainWindow "VGA" 2 () $ \events keyState () -> do
-    --     return $ Just (rasterizeBuffer (SNat @640) (SNat @480) arr, ())
+    withMainWindow "VGA" 2 () $ \events keyState () -> do
+        writeIORef keyStateRef keyState
+        return $ Just (rasterizeRay ray $ rasterizeBuffer (SNat @640) (SNat @480) arr, ())
   where
     topEntity' i =
         let VGAOut{ vgaSync = VGASync{..}, ..} = topEntity clockGen resetGen sw up dn

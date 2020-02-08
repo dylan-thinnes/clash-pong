@@ -5,6 +5,7 @@ module RetroClash.Sim.SDL
 
     , rasterizePattern
     , rasterizeBuffer
+    , rasterizeRay
     ) where
 
 import Prelude
@@ -20,6 +21,7 @@ import Control.Concurrent (threadDelay)
 import Data.Text (Text)
 import Control.Monad
 import Data.Array.IO
+import Data.IORef
 
 type Color = (Word8, Word8, Word8)
 type Draw w h = (Index w, Index h) -> Color
@@ -56,6 +58,20 @@ rasterizeBuffer _ _ arr = Rasterizer $ \ptr stride -> do
             pokeElemOff ptr (offset + 1) =<< readArray arr (fromIntegral x, fromIntegral y, 2)
             pokeElemOff ptr (offset + 2) =<< readArray arr (fromIntegral x, fromIntegral y, 1)
             pokeElemOff ptr (offset + 3) =<< readArray arr (fromIntegral x, fromIntegral y, 0)
+
+rasterizeRay
+    :: IORef (Int, Int)
+    -> Rasterizer w h
+    -> Rasterizer w h
+rasterizeRay ray other = Rasterizer $ \ptr stride -> do
+    runRasterizer other ptr stride
+    (x, y) <- readIORef ray
+
+    let offset = fromIntegral y * fromIntegral stride + (fromIntegral x * 4)
+    pokeElemOff ptr (offset + 0) maxBound
+    pokeElemOff ptr (offset + 1) 0
+    pokeElemOff ptr (offset + 2) 0
+    pokeElemOff ptr (offset + 3) maxBound
 
 
 withMainWindow
