@@ -26,7 +26,7 @@ import SDL hiding (get)
 import System.Clock
 
 vgaRetrace :: VGATiming visible -> (Int, Bit)
-vgaRetrace VGATiming{..} = (snatToNum pulseWidth + snatToNum postWidth, toActiveDyn polarity True)
+vgaRetrace VGATiming{..} = (snatToNum pulseWidth + snatToNum postWidth - 1, toActiveDyn polarity True)
 
 data SinkState
     = Visible Int
