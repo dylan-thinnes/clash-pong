@@ -69,6 +69,8 @@ executables:
 
   pong-sim:
     main: simulator-clash.hs
+    dependencies:
+      - arrows
 
   pong-verilator:
     main: verilator.hs
