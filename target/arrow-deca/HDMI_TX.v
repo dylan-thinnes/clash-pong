@@ -1,7 +1,7 @@
 module HDMI_TX(
 
     // CLOCK
-    input CLK_25MHZ,
+    input MAX10_CLK1_50,
 
 	//////////// KEY //////////
 	input 		     [1:0]		KEY,
@@ -23,11 +23,23 @@ module HDMI_TX(
 	input 		          		HDMI_TX_INT,
 	output		          		HDMI_TX_VS
 );
+    // PLL for 25MHz
+    wire CLK_25MHZ;
+    wire CLK_LOCKED;
+
+    pll25mhz pll25mhz_inst (
+        .areset ( 1'b0 ),
+        .inclk0 ( MAX10_CLK1_50 ),
+        .c0 ( CLK_25MHZ ),
+        .locked ( CLK_LOCKED )
+        );
+
     assign HDMI_TX_CLK = CLK_25MHZ;
 
+    // Run top entity at 25 MHz
     topEntity u_topEntity
         ( .CLK_25MHZ(CLK_25MHZ)
-        , .RESET(1'b0)
+        , .RESET(!CLK_LOCKED)
         , .BTN_UP(KEY[0])
         , .BTN_DOWN(KEY[1])
         , .VGA_HSYNC(HDMI_TX_HS)
