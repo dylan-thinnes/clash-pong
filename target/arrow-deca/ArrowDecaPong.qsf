@@ -1,8 +1,8 @@
 set_global_assignment -name DEVICE 10M50DAF484C6GES
 set_global_assignment -name FAMILY "MAX 10"
-set_global_assignment -name TOP_LEVEL_ENTITY HDMI_TX
+set_global_assignment -name TOP_LEVEL_ENTITY ArrowDecaPong
 
-set_global_assignment -name VERILOG_FILE HDMI_TX.v
+set_global_assignment -name VERILOG_FILE ArrowDecaPong.v
 set_global_assignment -name VERILOG_FILE ../../_build/clash/Pong.topEntity/topEntity.v
 
 set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
