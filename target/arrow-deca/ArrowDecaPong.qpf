@@ -19,13 +19,13 @@
 #
 # Quartus Prime
 # Version 20.1.1 Build 720 11/11/2020 SJ Lite Edition
-# Date created = 20:30:51  September 06, 2021
+# Date created = 20:53:35  September 06, 2021
 #
 # -------------------------------------------------------------------------- #
 
 QUARTUS_VERSION = "20.1"
-DATE = "20:30:51  September 06, 2021"
+DATE = "20:53:35  September 06, 2021"
 
 # Revisions
 
-PROJECT_REVISION = "1"
+PROJECT_REVISION = "ArrowDecaPong"
