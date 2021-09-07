@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+quartus_sh -t ArrowDecaPong.tcl "$@"
