@@ -1,4 +1,4 @@
-module ArrowDecaPong(
+module Top(
 
     // CLOCK
     input MAX10_CLK1_50,
