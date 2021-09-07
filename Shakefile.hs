@@ -31,7 +31,7 @@ main = shakeArgs shakeOptions{ shakeFiles = outDir } $ do
             [ ("nexys-a7-50t", xilinxVivado nexysA750T)
             , ("papilio-pro", xilinxISE papilioPro)
             , ("papilio-one", xilinxISE papilioOne)
-            , ("arrow-deca", quartus)
+            , ("arrow-deca", quartus "ArrowDecaPong")
             ]
 
     forM_ targets $ \(name, synth) -> do
