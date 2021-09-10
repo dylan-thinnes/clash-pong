@@ -40,8 +40,8 @@ module Top(
     topEntity u_topEntity
         ( .CLK_25MHZ(CLK_25MHZ)
         , .RESET(!CLK_LOCKED)
-        , .BTN_UP(KEY[0])
-        , .BTN_DOWN(KEY[1])
+        , .BTN_UP(!KEY[0])
+        , .BTN_DOWN(!KEY[1])
         , .VGA_HSYNC(HDMI_TX_HS)
         , .VGA_VSYNC(HDMI_TX_VS)
         , .VGA_DE(HDMI_TX_DE)
