@@ -47,13 +47,6 @@ packages:
   original:
     hackage: clashilator-0.1.0
 - completed:
-    hackage: clash-shake-0.1.0@sha256:fe0c046b60cd99817a20d7a911af0cc3a858bf0a2df18e4581aa51a71d6faf8f,1739
-    pantry-tree:
-      size: 570
-      sha256: 664b2e356f5bfecdb2d3d1aae64d8774556f22a89029c723b9ed0fd7abdf0b0b
-  original:
-    hackage: clash-shake-0.1.0
-- completed:
     hackage: monoidal-containers-0.6.0.1@sha256:f56ea8fe91ff93da140e38b8dab4b94437b901818c13ba72fc7fc802290323ee,2583
     pantry-tree:
       size: 569

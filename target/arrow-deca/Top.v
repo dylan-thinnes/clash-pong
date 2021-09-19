@@ -2,6 +2,7 @@ module Top(
 
     // CLOCK
     input MAX10_CLK1_50,
+    input MAX10_CLK2_50,
 
 	//////////// KEY //////////
 	input 		     [1:0]		KEY,
@@ -40,14 +41,23 @@ module Top(
     topEntity u_topEntity
         ( .CLK_25MHZ(CLK_25MHZ)
         , .RESET(!CLK_LOCKED)
-        , .BTN_UP(KEY[0])
-        , .BTN_DOWN(KEY[1])
+        , .BTN_UP(!KEY[0])
+        , .BTN_DOWN(!KEY[1])
         , .VGA_HSYNC(HDMI_TX_HS)
         , .VGA_VSYNC(HDMI_TX_VS)
         , .VGA_DE(HDMI_TX_DE)
         , .VGA_RED(HDMI_TX_D[23:16])
         , .VGA_GREEN(HDMI_TX_D[15:8])
         , .VGA_BLUE(HDMI_TX_D[7:0])
+        );
+
+    // HDMI I2C, by Terasic
+    I2C_HDMI_Config u_I2C_HDMI_Config
+        ( .iCLK(MAX10_CLK2_50)
+        , .iRST_N(1'b1)
+        , .I2C_SCLK(HDMI_I2C_SCL)
+        , .I2C_SDAT(HDMI_I2C_SDA)
+        , .HDMI_TX_INT(HDMI_TX_INT)
         );
 
 endmodule

@@ -1,19 +1,13 @@
 set_global_assignment -name DEVICE 10M50DAF484C6GES
 set_global_assignment -name FAMILY "MAX 10"
-set_global_assignment -name TOP_LEVEL_ENTITY Top
-
-set_global_assignment -name VERILOG_FILE Top.v
-set_global_assignment -name VERILOG_FILE ../../_build/clash/Pong.topEntity/topEntity.v
-
-set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
-set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
-set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
 
 #============================================================
 # CLOCK
 #============================================================
 set_location_assignment PIN_M8 -to MAX10_CLK1_50
 set_instance_assignment -name IO_STANDARD "2.5 V" -to MAX10_CLK1_50
+set_location_assignment PIN_P11 -to MAX10_CLK2_50
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to MAX10_CLK2_50
 
 #============================================================
 # KEY
@@ -104,9 +98,6 @@ set_location_assignment PIN_C11 -to HDMI_TX_VS
 set_instance_assignment -name IO_STANDARD "1.8 V" -to HDMI_TX_VS
 
 set_global_assignment -name LAST_QUARTUS_VERSION "20.1.1 Lite Edition"
-set_global_assignment -name QIP_FILE pll25mhz.qip
-
-set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
 
 set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0
 set_global_assignment -name MAX_CORE_JUNCTION_TEMP 85
