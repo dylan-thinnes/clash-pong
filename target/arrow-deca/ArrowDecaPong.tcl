@@ -8,7 +8,7 @@ set output_dir [lindex $argv 0]
 set output_dir [file normalize $output_dir]
 puts stderr "Output directory: $output_dir"
 
-project_open [file join [file dirname $argv0] ArrowDecaPong.qpf]
+project_open [file join $output_dir ArrowDecaPong.qpf]
 
 set_global_assignment -name PROJECT_OUTPUT_DIRECTORY [file normalize $output_dir]
 
